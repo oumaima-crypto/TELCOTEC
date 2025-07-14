@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+{% block title %}Predict Path Loss{% endblock %}
+{% block content %}
+<style>
+  body {
+    background: linear-gradient(120deg, #e0e7ff 0%, #f0fdf4 100%);
+  }
+  .input-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-size: 1.1rem;
+    opacity: 0.7;
+  }
+  .input-group {
+    position: relative;
+  }
+  .fade-in {
+    animation: fadeIn 0.7s;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px);}
+    to { opacity: 1; transform: translateY(0);}
+  }
+  .sticky-bottom {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    background: linear-gradient(120deg, #e0e7ff 0%, #f0fdf4 100%);
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+</style>
+<div class="w-full min-h-screen flex flex-col px-2 sm:px-8 py-6">
+  <div class="w-full max-w-7xl mx-auto">
+    <h1 class="text-3xl font-bold mb-6 text-blue-800 dark:text-blue-200 flex items-center gap-2">
+      <span class="material-icons text-blue-500">wifi</span>
+      Path Loss Prediction
+    </h1>
+    {% if error %}
+      <div class="mb-4 p-3 rounded bg-red-100 text-red-700 border border-red-300">{{ error }}</div>
+    {% endif %}
+    <form id="prediction-form" method="POST" action="{{ url_for('home') }}" class="w-full grid grid-cols-1 md:grid-cols-3 gap-8">
+      <!-- Transmitter Card -->
+      <section class="bg-white dark:bg-blue-950 rounded-2xl shadow-lg p-6 border border-blue-200 dark:border-blue-800 flex flex-col fade-in">
+        <h2 class="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-4 flex items-center gap-2">
+          <span class="material-icons text-blue-500 dark:text-blue-300">radio_button_checked</span>
+          Transmitter
+        </h2>
+        <div class="space-y-4">
+          <div class="input-group">
+            <span class="input-icon">📍</span>
+            <label for="x" class="sr-only">x</label>
+            <input type="number" name="x" id="x" min="0" max="20" step="0.01" required
+              placeholder="x (e.g., 5)"
+              class="pl-8 rounded-lg border border-gray-300 dark:border-blue-700 bg-gray-50 dark:bg-blue-900 py-2 px-4 text-gray-700 dark:text-gray-200 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 outline-none transition"
+              value="{{ request.form.x or '' }}"
+              aria-describedby="x-feedback"
+            >
+            <div id="x-feedback" class="text-xs text-red-500 mt-1 hidden"></div>
+          </div>
+          <div class="input-group">
+            <span class="input-icon">📍</span>
+            <label for="y" class="sr-only">y</label>
+            <input type="number" name="y" id="y" min="0" max="20" step="0.01" required
+              placeholder="y (e.g., 12.3)"
+              class="pl-8 rounded-lg border border-gray-300 dark:border-blue-700 bg-gray-50 dark:bg-blue-900 py-2 px-4 text-gray-700 dark:text-gray-200 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 outline-none transition"
+              value="{{ request.form.y or '' }}"
+              aria-describedby="y-feedback"
+            >
+            <div id="y-feedback" class="text-xs text-red-500 mt-1 hidden"></div>
+          </div>
+          <div class="input-group">
+            <span class="input-icon">📍</span>
+            <label for="z" class="sr-only">z</label>
+            <input type="number" name="z" id="z" min="0" max="4" step="0.01" required
+              placeholder="z (e.g., 2.5)"
+              class="pl-8 rounded-lg border border-gray-300 dark:border-blue-700 bg-gray-50 dark:bg-blue-900 py-2 px-4 text-gray-700 dark:text-gray-200 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 outline-none transition"
+              value="{{ request.form.z or '' }}"
+              aria-describedby="z-feedback"
+            >
+            <div id="z-feedback" class="text-xs text-red-500 mt-1 hidden"></div>
+          </div>
+        </div>
+      </section>
+      <!-- Receiver Card -->
+      <section class="bg-white dark:bg-green-950 rounded-2xl shadow-lg p-6 border border-green-200 dark:border-green-800 flex flex-col fade-in">
+        <h2 class="text-lg font-semibold text-green-700 dark:text-green-300 mb-4 flex items-center gap-2">
+          <span class="material-icons text-green-500 dark:text-green-300">location_on</span>
+          Receiver
+        </h2>
+        <div class="space-y-4">
+          <div class="input-group">
+            <span class="input-icon">📍</span>
+            <label for="x0" class="sr-only">x₀</label>
+            <input type="number" name="x0" id="x0" min="0" max="20" step="0.01" required
+              placeholder="x₀ (e.g., 10)"
+              class="pl-8 rounded-lg border border-gray-300 dark:border-green-700 bg-gray-50 dark:bg-green-900 py-2 px-4 text-gray-700 dark:text-gray-200 w-full focus:border-green-500 focus:ring-2 focus:ring-green-200 dark:focus:ring-green-900 outline-none transition"
+              value="{{ request.form.x0 or '' }}"
+              aria-describedby="x0-feedback"
+            >
+            <div id="x0-feedback" class="text-xs text-red-500 mt-1 hidden"></div>
+          </div>
+          <div class="input-group">
+            <span class="input-icon">📍</span>
+            <label for="y0" class="sr-only">y₀</label>
+            <input type="number" name="y0" id="y0" min="0" max="20" step="0.01" required
+              placeholder="y₀ (e.g., 8.7)"
+              class="pl-8 rounded-lg border border-gray-300 dark:border-green-700 bg-gray-50 dark:bg-green-900 py-2 px-4 text-gray-700 dark:text-gray-200 w-full focus:border-green-500 focus:ring-2 focus:ring-green-200 dark:focus:ring-green-900 outline-none transition"
+              value="{{ request.form.y0 or '' }}"
+              aria-describedby="y0-feedback"
+            >
+            <div id="y0-feedback" class="text-xs text-red-500 mt-1 hidden"></div>
+          </div>
+          <div class="input-group">
+            <span class="input-icon">📍</span>
+            <label for="z0" class="sr-only">z₀</label>
+            <input type="number" name="z0" id="z0" min="2" max="10" step="0.01" required
+              placeholder="z₀ (e.g., 3.2)"
+              class="pl-8 rounded-lg border border-gray-300 dark:border-green-700 bg-gray-50 dark:bg-green-900 py-2 px-4 text-gray-700 dark:text-gray-200 w-full focus:border-green-500 focus:ring-2 focus:ring-green-200 dark:focus:ring-green-900 outline-none transition"
+              value="{{ request.form.z0 or '' }}"
+              aria-describedby="z0-feedback"
+            >
+            <div id="z0-feedback" class="text-xs text-red-500 mt-1 hidden"></div>
+          </div>
+        </div>
+      </section>
+      <!-- Environment Card -->
+      <section class="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-6 border border-gray-200 dark:border-gray-800 flex flex-col fade-in">
+        <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2">
+          <span class="material-icons text-yellow-500 dark:text-yellow-300">eco</span>
+          Environment
+        </h2>
+        <div class="space-y-4">
+          <div class="input-group">
+            <span class="input-icon">🧱</span>
+            <label for="obstacles" class="sr-only">Obstacles</label>
+            <input type="number" name="obstacles" id="obstacles" min="0" max="4" required
+              placeholder="Obstacles (e.g., 2)"
+              class="pl-8 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-2 px-4 text-gray-700 dark:text-gray-200 w-full focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 dark:focus:ring-yellow-900 outline-none transition"
+              value="{{ request.form.obstacles or '' }}"
+              aria-describedby="obstacles-feedback"
+            >
+            <div id="obstacles-feedback" class="text-xs text-red-500 mt-1 hidden"></div>
+          </div>
+          <div class="input-group">
+            <span class="input-icon">🌳</span>
+            <label for="clutter_height" class="sr-only">Clutter Height</label>
+            <input type="number" name="clutter_height" id="clutter_height" min="0.5" max="2.5" step="0.01" required
+              placeholder="Clutter Height (e.g., 1.5 m)"
+              class="pl-8 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-2 px-4 text-gray-700 dark:text-gray-200 w-full focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 dark:focus:ring-yellow-900 outline-none transition"
+              value="{{ request.form.clutter_height or '' }}"
+              aria-describedby="clutter_height-feedback"
+            >
+            <div id="clutter_height-feedback" class="text-xs text-red-500 mt-1 hidden"></div>
+          </div>
+          <div class="input-group">
+            <span class="input-icon">↔️</span>
+            <label for="distance" class="sr-only">Distance</label>
+            <input type="number" name="distance" id="distance" min="1" max="30" step="0.01" required
+              placeholder="Distance (e.g., 15.2 m)"
+              class="pl-8 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-2 px-4 text-gray-700 dark:text-gray-200 w-full focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 dark:focus:ring-yellow-900 outline-none transition"
+              value="{{ request.form.distance or '' }}"
+              aria-describedby="distance-feedback"
+            >
+            <div id="distance-feedback" class="text-xs text-red-500 mt-1 hidden"></div>
+          </div>
+          <div class="input-group">
+            <span class="input-icon">📐</span>
+            <label for="angle" class="sr-only">Angle</label>
+            <input type="number" name="angle" id="angle" min="0" max="90" step="0.01" required
+              placeholder="Angle (e.g., 45°)"
+              class="pl-8 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-2 px-4 text-gray-700 dark:text-gray-200 w-full focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 dark:focus:ring-yellow-900 outline-none transition"
+              value="{{ request.form.angle or '' }}"
+              aria-describedby="angle-feedback"
+            >
+            <div id="angle-feedback" class="text-xs text-red-500 mt-1 hidden"></div>
+          </div>
+        </div>
+      </section>
+    </form>
+    <!-- Sticky Predict/Reset Buttons -->
+    <div class="sticky-bottom flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
+      <button id="predict-btn" type="submit" form="prediction-form"
+        class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg px-10 py-3 rounded-xl shadow-lg transition flex items-center justify-center gap-2 focus:outline-none focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900"
+        aria-label="Predict"
+      >
+        <span id="predict-btn-text">Predict</span>
+        <svg id="predict-loading" class="animate-spin h-6 w-6 text-white hidden" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+        </svg>
+      </button>
+      <button type="button" id="reset-btn"
+        class="w-full sm:w-auto bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-semibold px-10 py-3 rounded-xl shadow transition"
+        aria-label="Reset"
+      >Reset</button>
+    </div>
+    <!-- Output and Save Button -->
+    {% if prediction is not none %}
+      <div class="mt-10 flex justify-center fade-in">
+        <div class="p-8 rounded-2xl bg-gradient-to-br from-green-100 via-green-50 to-blue-100 dark:from-green-900 dark:to-blue-900 border-2 border-green-300 dark:border-green-700 shadow-xl text-center max-w-lg w-full">
+          <div class="text-lg font-semibold text-green-800 dark:text-green-200 mb-2">Predicted Path Loss</div>
+          <div class="text-5xl font-extrabold text-green-700 dark:text-green-100 mb-4 animate-pulse">{{ '%.2f'|format(prediction) }} dB</div>
+          <div class="text-sm text-gray-500 dark:text-gray-300">Signal quality: <span class="font-bold">{% if prediction < 80 %}Excellent{% elif prediction < 110 %}Good{% else %}Poor{% endif %}</span></div>
+          <button id="open-save-modal" type="button" class="mt-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg shadow transition">Save</button>
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Save Modal (hidden by default, shown with JS) -->
+    <div id="save-modal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-8 w-full max-w-md border border-blue-200 dark:border-blue-800">
+        <h2 class="text-xl font-bold mb-4 text-blue-700 dark:text-blue-300">Save Prediction</h2>
+        <form method="POST" action="{{ url_for('save_prediction') }}">
+          <div class="mb-4">
+            <label for="building_name" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Building Name</label>
+            <input type="text" name="building_name" id="building_name" required class="rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-2 px-4 text-gray-700 dark:text-gray-200 w-full" placeholder="e.g., Telcotec HQ">
+          </div>
+          <div class="mb-6">
+            <label for="building_address" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Building Address</label>
+            <input type="text" name="building_address" id="building_address" required class="rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-2 px-4 text-gray-700 dark:text-gray-200 w-full" placeholder="e.g., 123 Main Street, Tunis">
+          </div>
+          <div class="flex justify-end gap-2">
+            <button type="button" id="close-save-modal" class="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition">Cancel</button>
+            <button type="submit" class="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+<script>
+  // Real-time validation
+  function validateInput(id, min, max) {
+    const input = document.getElementById(id);
+    const feedback = document.getElementById(id + '-feedback');
+    if (!input) return;
+    input.addEventListener('input', function () {
+      let val = parseFloat(input.value);
+      if (input.value === '') {
+        feedback.classList.add('hidden');
+        feedback.textContent = '';
+        input.classList.remove('border-red-500');
+        return;
+      }
+      if (val < min || val > max) {
+        feedback.textContent = `Value must be between ${min} and ${max}`;
+        feedback.classList.remove('hidden');
+        input.classList.add('border-red-500');
+      } else {
+        feedback.classList.add('hidden');
+        feedback.textContent = '';
+        input.classList.remove('border-red-500');
+      }
+    });
+  }
+  validateInput('x', 0, 20);
+  validateInput('y', 0, 20);
+  validateInput('z', 0, 4);
+  validateInput('x0', 0, 20);
+  validateInput('y0', 0, 20);
+  validateInput('z0', 2, 10);
+  validateInput('obstacles', 0, 4);
+  validateInput('clutter_height', 0.5, 2.5);
+  validateInput('distance', 1, 30);
+  validateInput('angle', 0, 90);
+
+  // Predict button loading
+  const predictBtn = document.getElementById('predict-btn');
+  const predictBtnText = document.getElementById('predict-btn-text');
+  const predictLoading = document.getElementById('predict-loading');
+  if (predictBtn) {
+    predictBtn.addEventListener('click', function () {
+      if (document.getElementById('prediction-form').checkValidity()) {
+        predictBtnText.textContent = "Predicting...";
+        predictLoading.classList.remove('hidden');
+      }
+    });
+  }
+
+  // Reset button
+  document.getElementById('reset-btn').onclick = function () {
+    const form = document.getElementById('prediction-form');
+    form.reset();
+    // Clear validation feedback
+    form.querySelectorAll('.text-red-500').forEach(e => {
+      e.classList.add('hidden');
+      e.textContent = '';
+    });
+    form.querySelectorAll('input').forEach(e => e.classList.remove('border-red-500'));
+  };
+
+  // Show Save Modal
+  const openSaveModal = document.getElementById('open-save-modal');
+  const saveModal = document.getElementById('save-modal');
+  const closeSaveModal = document.getElementById('close-save-modal');
+  if (openSaveModal && saveModal && closeSaveModal) {
+    openSaveModal.onclick = () => saveModal.classList.remove('hidden');
+    closeSaveModal.onclick = () => saveModal.classList.add('hidden');
+    // Optional: close modal on background click
+    saveModal.onclick = e => { if (e.target === saveModal) saveModal.classList.add('hidden'); };
+  }
+</script>
+{% endblock %}
