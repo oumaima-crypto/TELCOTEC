@@ -105,14 +105,26 @@
             <td class="px-2 py-2">{{ p['angle'] }}</td>
             <td class="px-2 py-2 font-bold">{{ '%.2f'|format(p['path_loss']) }}</td>
             <!-- Signal Quality -->
-            <td class="px-2 py-2">
-              {% if p['path_loss'] < 70 %}
-                <span class="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold">
-                  <span class="material-icons text-green-500 text-base mr-1">check_circle</span> Good
+            <td class="px-2 py-2 align-middle text-center">
+              {% if p['path_loss'] < 60 %}
+                <span class="inline-flex items-center justify-center rounded-full bg-green-100 text-green-700 text-[10px] font-semibold px-1 py-0 whitespace-nowrap" style="min-width:24px; max-width:48px; height:1.2em;">
+                  <span class="material-icons text-green-500 text-xs mr-0.5" style="font-size:0.95em;">signal_cellular_4_bar</span>
+                  Excellent
+                </span>
+              {% elif p['path_loss'] < 80 %}
+                <span class="inline-flex items-center justify-center rounded-full bg-lime-100 text-lime-800 text-[10px] font-semibold px-1 py-0 whitespace-nowrap" style="min-width:20px; max-width:40px; height:1.2em;">
+                  <span class="material-icons text-lime-600 text-xs mr-0.5" style="font-size:0.95em;">signal_cellular_3_bar</span>
+                  Good
+                </span>
+              {% elif p['path_loss'] < 100 %}
+                <span class="inline-flex items-center justify-center rounded-full bg-yellow-100 text-yellow-800 text-[10px] font-semibold px-1 py-0 whitespace-nowrap" style="min-width:28px; max-width:48px; height:1.2em;">
+                  <span class="material-icons text-yellow-600 text-xs mr-0.5" style="font-size:0.95em;">signal_cellular_2_bar</span>
+                  Fair
                 </span>
               {% else %}
-                <span class="inline-flex items-center px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold">
-                  <span class="material-icons text-red-500 text-base mr-1">cancel</span> Bad
+                <span class="inline-flex items-center justify-center rounded-full bg-red-100 text-red-700 text-[10px] font-semibold px-1 py-0 whitespace-nowrap" style="min-width:16px; max-width:32px; height:1.2em;">
+                  <span class="material-icons text-red-500 text-xs mr-0.5" style="font-size:0.95em;">signal_cellular_0_bar</span>
+                  Poor
                 </span>
               {% endif %}
             </td>

@@ -64,18 +64,30 @@ def init_db():
         db.commit()
 init_db()
 
-# --- Load TensorFlow Model and Scaler ---
+# --- Load TensorFlow DNN Model and Scalers (X and y) ---
 try:
-    model = tf.keras.models.load_model("C:/Users/HP PAVILION/telcotec/path_loss_model_final.keras", compile=False)
-    scaler = joblib.load("C:/Users/HP PAVILION/telcotec/scaler_new.pkl")
+    model_path = "C:/Users/HP PAVILION/telcotec/model_pathloss_dnn.keras"
+    scaler_x_path = "C:/Users/HP PAVILION/telcotec/scaler_X.pkl"
+    scaler_y_path = "C:/Users/HP PAVILION/telcotec/scaler_y.pkl"
+    if not os.path.exists(model_path):
+        raise FileNotFoundError(f"Model file not found: {model_path}")
+    if not os.path.exists(scaler_x_path):
+        raise FileNotFoundError(f"Scaler X file not found: {scaler_x_path}")
+    if not os.path.exists(scaler_y_path):
+        raise FileNotFoundError(f"Scaler y file not found: {scaler_y_path}")
+    model = tf.keras.models.load_model(model_path, compile=False)
+    scaler = joblib.load(scaler_x_path)
+    scaler_y = joblib.load(scaler_y_path)
 except Exception as e:
     logging.error(f"Model or scaler loading failed: {e}")
     raise RuntimeError(f"Model or scaler loading failed: {e}")
 
 FEATURES = ['x', 'y', 'z', 'x0', 'y0', 'z0', 'obstacles', 'clutter_height', 'distance', 'angle']
+# Assurez-vous que l'ordre et le nombre de features correspondent à l'entraînement du modèle et du scaler.
 
 def predict_path_loss(form):
     try:
+        # Récupération des features depuis le formulaire
         x = float(form.get('x', 0))
         y = float(form.get('y', 0))
         z = float(form.get('z', 0))
@@ -86,19 +98,24 @@ def predict_path_loss(form):
         clutter_height = float(form.get('clutter_height', 0))
         distance = float(form.get('distance', 0))
         angle = float(form.get('angle', 0))
-        # Validate ranges
+        # Validation des valeurs
         if not (0 <= x <= 20 and 0 <= y <= 20 and 0 <= z <= 4 and
                 0 <= x0 <= 20 and 0 <= y0 <= 20 and 2 <= z0 <= 10 and
                 0 <= obstacles <= 4 and 0.5 <= clutter_height <= 2.5 and
                 1 <= distance <= 30 and 0 <= angle <= 90):
             return None, "Input values out of allowed range."
         features = [[x, y, z, x0, y0, z0, obstacles, clutter_height, distance, angle]]
+        # Scale X
         features_scaled = scaler.transform(features)
-        prediction = model.predict(features_scaled, verbose=0)[0][0]
-        return prediction, None
+        # Predict (model expects scaled X)
+        y_pred_scaled = model.predict(features_scaled, verbose=0)
+        # Inverse transform y
+        y_pred = scaler_y.inverse_transform(y_pred_scaled.reshape(-1, 1))[0][0]
+        return y_pred, None
     except Exception as e:
         logging.error(f"Prediction failed: {e}")
-        return None, "Prediction error."
+        import traceback; traceback.print_exc()
+        return None, f"Prediction error: {e}"
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

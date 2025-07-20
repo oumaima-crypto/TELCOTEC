@@ -3,19 +3,134 @@
 {% block content %}
 <style>
   body {
-    background: linear-gradient(120deg, #e0e7ff 0%, #f0fdf4 100%);
+    font-family: 'Inter', 'Roboto', Arial, sans-serif;
+    background: linear-gradient(120deg, #f6f8fb 0%, #eaf1fb 100%);
+  }
+  .glass-card {
+    background: rgba(255,255,255,0.65);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border-radius: 1.5rem;
+    box-shadow: 0 8px 32px 0 rgba(31,38,135,0.08);
+    border: 1px solid rgba(255,255,255,0.18);
+    transition: box-shadow 0.2s;
+  }
+  .glass-card.dark {
+    background: rgba(24,28,38,0.65);
+    border: 1px solid rgba(60,60,60,0.18);
   }
   .input-icon {
     position: absolute;
-    left: 0.75rem;
+    left: 1rem;
     top: 50%;
     transform: translateY(-50%);
     pointer-events: none;
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     opacity: 0.7;
   }
   .input-group {
     position: relative;
+  }
+  .input-modern {
+    font-family: inherit;
+    font-size: 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid #e5e7eb;
+    background: rgba(245,247,250,0.7);
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    color: #222;
+    transition: border 0.2s, background 0.2s;
+    outline: none;
+  }
+  .input-modern:focus {
+    border-color: #6366f1;
+    background: #fff;
+  }
+  .dark .input-modern {
+    background: rgba(30,41,59,0.7);
+    color: #e5e7eb;
+    border-color: #334155;
+  }
+  .dark .input-modern:focus {
+    background: #1e293b;
+    border-color: #6366f1;
+  }
+  .form-label {
+    font-size: 0.97rem;
+    font-weight: 500;
+    color: #475569;
+    margin-bottom: 0.3rem;
+    letter-spacing: 0.01em;
+  }
+  .dark .form-label {
+    color: #cbd5e1;
+  }
+  .form-title {
+    font-size: 1.18rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: #22223b;
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .dark .form-title {
+    color: #e0e7ef;
+  }
+  .lucide {
+    width: 1.3em;
+    height: 1.3em;
+    stroke-width: 1.6;
+    vertical-align: middle;
+    margin-right: 0.3em;
+    opacity: 0.7;
+  }
+  .btn-flat {
+    border-radius: 0.9rem;
+    font-weight: 600;
+    font-family: inherit;
+    font-size: 1.08rem;
+    padding: 0.85rem 2.5rem;
+    transition: background 0.18s, box-shadow 0.18s, color 0.18s, transform 0.12s;
+    box-shadow: 0 2px 8px 0 rgba(31,38,135,0.05);
+    outline: none;
+    border: none;
+    cursor: pointer;
+  }
+  .btn-gradient {
+    background: linear-gradient(90deg, #6366f1 0%, #60a5fa 100%);
+    color: #fff;
+  }
+  .btn-gradient:hover, .btn-gradient:focus {
+    background: linear-gradient(90deg, #6366f1 10%, #2563eb 100%);
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 4px 16px 0 rgba(99,102,241,0.13);
+  }
+  .btn-neutral {
+    background: #f3f4f6;
+    color: #374151;
+  }
+  .btn-neutral:hover, .btn-neutral:focus {
+    background: #e5e7eb;
+    color: #22223b;
+    transform: translateY(-2px) scale(1.03);
+  }
+  .dark .btn-neutral {
+    background: #1e293b;
+    color: #e5e7eb;
+  }
+  .dark .btn-neutral:hover, .dark .btn-neutral:focus {
+    background: #334155;
+    color: #fff;
+  }
+  .sticky-bottom {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    background: transparent;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
   }
   .fade-in {
     animation: fadeIn 0.7s;
@@ -24,19 +139,14 @@
     from { opacity: 0; transform: translateY(20px);}
     to { opacity: 1; transform: translateY(0);}
   }
-  .sticky-bottom {
-    position: sticky;
-    bottom: 0;
-    z-index: 10;
-    background: linear-gradient(120deg, #e0e7ff 0%, #f0fdf4 100%);
-    padding-top: 1rem;
-    padding-bottom: 1rem;
+  @media (max-width: 900px) {
+    .glass-card { margin-bottom: 1.5rem; }
   }
 </style>
 <div class="w-full min-h-screen flex flex-col px-2 sm:px-8 py-6">
-  <div class="w-full max-w-7xl mx-auto">
-    <h1 class="text-3xl font-bold mb-6 text-blue-800 dark:text-blue-200 flex items-center gap-2">
-      <span class="material-icons text-blue-500">wifi</span>
+  <div class="w-full max-w-6xl mx-auto">
+    <h1 class="text-3xl font-extrabold mb-8 text-blue-800 dark:text-blue-200 flex items-center gap-2" style="font-family: 'Inter', 'Roboto', Arial, sans-serif;">
+      <svg class="lucide" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
       Path Loss Prediction
     </h1>
     {% if error %}
@@ -44,40 +154,40 @@
     {% endif %}
     <form id="prediction-form" method="POST" action="{{ url_for('home') }}" class="w-full grid grid-cols-1 md:grid-cols-3 gap-8">
       <!-- Transmitter Card -->
-      <section class="bg-white dark:bg-blue-950 rounded-2xl shadow-lg p-6 border border-blue-200 dark:border-blue-800 flex flex-col fade-in">
-        <h2 class="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-4 flex items-center gap-2">
-          <span class="material-icons text-blue-500 dark:text-blue-300">radio_button_checked</span>
+      <section class="glass-card dark:glass-card shadow-lg p-7 flex flex-col fade-in">
+        <div class="form-title">
+          <svg class="lucide" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
           Transmitter
-        </h2>
-        <div class="space-y-4">
+        </div>
+        <div class="space-y-5">
           <div class="input-group">
-            <span class="input-icon">📍</span>
-            <label for="x" class="sr-only">x</label>
-            <input type="number" name="x" id="x" min="0" max="20" step="0.01" required
-              placeholder="x (e.g., 5)"
-              class="pl-8 rounded-lg border border-gray-300 dark:border-blue-700 bg-gray-50 dark:bg-blue-900 py-2 px-4 text-gray-700 dark:text-gray-200 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 outline-none transition"
+            <span class="input-icon"><svg class="lucide" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M4.93 19.07l1.41-1.41"/><path d="M17.66 6.34l1.41-1.41"/></svg></span>
+            <label for="x" class="form-label">X Position</label>
+            <input type="number" name="x" id="x" min="0" max="100" step="0.01" required
+              placeholder="X coordinate"
+              class="input-modern w-full"
               value="{{ request.form.x or '' }}"
               aria-describedby="x-feedback"
             >
             <div id="x-feedback" class="text-xs text-red-500 mt-1 hidden"></div>
           </div>
           <div class="input-group">
-            <span class="input-icon">📍</span>
-            <label for="y" class="sr-only">y</label>
-            <input type="number" name="y" id="y" min="0" max="20" step="0.01" required
-              placeholder="y (e.g., 12.3)"
-              class="pl-8 rounded-lg border border-gray-300 dark:border-blue-700 bg-gray-50 dark:bg-blue-900 py-2 px-4 text-gray-700 dark:text-gray-200 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 outline-none transition"
+            <span class="input-icon"><svg class="lucide" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M4.93 19.07l1.41-1.41"/><path d="M17.66 6.34l1.41-1.41"/></svg></span>
+            <label for="y" class="form-label">Y Position</label>
+            <input type="number" name="y" id="y" min="0" max="100" step="0.01" required
+              placeholder="Y coordinate"
+              class="input-modern w-full"
               value="{{ request.form.y or '' }}"
               aria-describedby="y-feedback"
             >
             <div id="y-feedback" class="text-xs text-red-500 mt-1 hidden"></div>
           </div>
           <div class="input-group">
-            <span class="input-icon">📍</span>
-            <label for="z" class="sr-only">z</label>
+            <span class="input-icon"><svg class="lucide" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M4.93 19.07l1.41-1.41"/><path d="M17.66 6.34l1.41-1.41"/></svg></span>
+            <label for="z" class="form-label">Z Position</label>
             <input type="number" name="z" id="z" min="0" max="4" step="0.01" required
-              placeholder="z (e.g., 2.5)"
-              class="pl-8 rounded-lg border border-gray-300 dark:border-blue-700 bg-gray-50 dark:bg-blue-900 py-2 px-4 text-gray-700 dark:text-gray-200 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 outline-none transition"
+              placeholder="Z coordinate"
+              class="input-modern w-full"
               value="{{ request.form.z or '' }}"
               aria-describedby="z-feedback"
             >
@@ -86,40 +196,40 @@
         </div>
       </section>
       <!-- Receiver Card -->
-      <section class="bg-white dark:bg-green-950 rounded-2xl shadow-lg p-6 border border-green-200 dark:border-green-800 flex flex-col fade-in">
-        <h2 class="text-lg font-semibold text-green-700 dark:text-green-300 mb-4 flex items-center gap-2">
-          <span class="material-icons text-green-500 dark:text-green-300">location_on</span>
+      <section class="glass-card dark:glass-card shadow-lg p-7 flex flex-col fade-in">
+        <div class="form-title">
+          <svg class="lucide" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="7" rx="2"/><path d="M17 11V7a5 5 0 0 0-10 0v4"/></svg>
           Receiver
-        </h2>
-        <div class="space-y-4">
+        </div>
+        <div class="space-y-5">
           <div class="input-group">
-            <span class="input-icon">📍</span>
-            <label for="x0" class="sr-only">x₀</label>
-            <input type="number" name="x0" id="x0" min="0" max="20" step="0.01" required
-              placeholder="x₀ (e.g., 10)"
-              class="pl-8 rounded-lg border border-gray-300 dark:border-green-700 bg-gray-50 dark:bg-green-900 py-2 px-4 text-gray-700 dark:text-gray-200 w-full focus:border-green-500 focus:ring-2 focus:ring-green-200 dark:focus:ring-green-900 outline-none transition"
+            <span class="input-icon"><svg class="lucide" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M4.93 19.07l1.41-1.41"/><path d="M17.66 6.34l1.41-1.41"/></svg></span>
+            <label for="x0" class="form-label">X₀ Position</label>
+            <input type="number" name="x0" id="x0" min="0" max="100" step="0.01" required
+              placeholder="X₀ coordinate"
+              class="input-modern w-full"
               value="{{ request.form.x0 or '' }}"
               aria-describedby="x0-feedback"
             >
             <div id="x0-feedback" class="text-xs text-red-500 mt-1 hidden"></div>
           </div>
           <div class="input-group">
-            <span class="input-icon">📍</span>
-            <label for="y0" class="sr-only">y₀</label>
-            <input type="number" name="y0" id="y0" min="0" max="20" step="0.01" required
-              placeholder="y₀ (e.g., 8.7)"
-              class="pl-8 rounded-lg border border-gray-300 dark:border-green-700 bg-gray-50 dark:bg-green-900 py-2 px-4 text-gray-700 dark:text-gray-200 w-full focus:border-green-500 focus:ring-2 focus:ring-green-200 dark:focus:ring-green-900 outline-none transition"
+            <span class="input-icon"><svg class="lucide" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M4.93 19.07l1.41-1.41"/><path d="M17.66 6.34l1.41-1.41"/></svg></span>
+            <label for="y0" class="form-label">Y₀ Position</label>
+            <input type="number" name="y0" id="y0" min="0" max="100" step="0.01" required
+              placeholder="Y₀ coordinate"
+              class="input-modern w-full"
               value="{{ request.form.y0 or '' }}"
               aria-describedby="y0-feedback"
             >
             <div id="y0-feedback" class="text-xs text-red-500 mt-1 hidden"></div>
           </div>
           <div class="input-group">
-            <span class="input-icon">📍</span>
-            <label for="z0" class="sr-only">z₀</label>
-            <input type="number" name="z0" id="z0" min="2" max="10" step="0.01" required
-              placeholder="z₀ (e.g., 3.2)"
-              class="pl-8 rounded-lg border border-gray-300 dark:border-green-700 bg-gray-50 dark:bg-green-900 py-2 px-4 text-gray-700 dark:text-gray-200 w-full focus:border-green-500 focus:ring-2 focus:ring-green-200 dark:focus:ring-green-900 outline-none transition"
+            <span class="input-icon"><svg class="lucide" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M4.93 19.07l1.41-1.41"/><path d="M17.66 6.34l1.41-1.41"/></svg></span>
+            <label for="z0" class="form-label">Z₀ Position</label>
+            <input type="number" name="z0" id="z0" min="0" max="10" step="0.01" required
+              placeholder="Z₀ coordinate"
+              class="input-modern w-full"
               value="{{ request.form.z0 or '' }}"
               aria-describedby="z0-feedback"
             >
@@ -128,51 +238,51 @@
         </div>
       </section>
       <!-- Environment Card -->
-      <section class="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-6 border border-gray-200 dark:border-gray-800 flex flex-col fade-in">
-        <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2">
-          <span class="material-icons text-yellow-500 dark:text-yellow-300">eco</span>
+      <section class="glass-card dark:glass-card shadow-lg p-7 flex flex-col fade-in">
+        <div class="form-title">
+          <svg class="lucide" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3v4"/><path d="M8 3v4"/></svg>
           Environment
-        </h2>
-        <div class="space-y-4">
+        </div>
+        <div class="space-y-5">
           <div class="input-group">
-            <span class="input-icon">🧱</span>
-            <label for="obstacles" class="sr-only">Obstacles</label>
+            <span class="input-icon"><svg class="lucide" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6v6H9z"/></svg></span>
+            <label for="obstacles" class="form-label">Obstacles</label>
             <input type="number" name="obstacles" id="obstacles" min="0" max="4" required
-              placeholder="Obstacles (e.g., 2)"
-              class="pl-8 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-2 px-4 text-gray-700 dark:text-gray-200 w-full focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 dark:focus:ring-yellow-900 outline-none transition"
+              placeholder="Number of obstacles"
+              class="input-modern w-full"
               value="{{ request.form.obstacles or '' }}"
               aria-describedby="obstacles-feedback"
             >
             <div id="obstacles-feedback" class="text-xs text-red-500 mt-1 hidden"></div>
           </div>
           <div class="input-group">
-            <span class="input-icon">🌳</span>
-            <label for="clutter_height" class="sr-only">Clutter Height</label>
+            <span class="input-icon"><svg class="lucide" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 20v-6"/><path d="M6 20v-4"/><path d="M18 20v-2"/></svg></span>
+            <label for="clutter_height" class="form-label">Clutter Height (m)</label>
             <input type="number" name="clutter_height" id="clutter_height" min="0.5" max="2.5" step="0.01" required
-              placeholder="Clutter Height (e.g., 1.5 m)"
-              class="pl-8 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-2 px-4 text-gray-700 dark:text-gray-200 w-full focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 dark:focus:ring-yellow-900 outline-none transition"
+              placeholder="Clutter height"
+              class="input-modern w-full"
               value="{{ request.form.clutter_height or '' }}"
               aria-describedby="clutter_height-feedback"
             >
             <div id="clutter_height-feedback" class="text-xs text-red-500 mt-1 hidden"></div>
           </div>
           <div class="input-group">
-            <span class="input-icon">↔️</span>
-            <label for="distance" class="sr-only">Distance</label>
+            <span class="input-icon"><svg class="lucide" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 12h16"/><path d="M12 4v16"/></svg></span>
+            <label for="distance" class="form-label">Distance (m)</label>
             <input type="number" name="distance" id="distance" min="1" max="30" step="0.01" required
-              placeholder="Distance (e.g., 15.2 m)"
-              class="pl-8 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-2 px-4 text-gray-700 dark:text-gray-200 w-full focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 dark:focus:ring-yellow-900 outline-none transition"
+              placeholder="Distance"
+              class="input-modern w-full"
               value="{{ request.form.distance or '' }}"
               aria-describedby="distance-feedback"
             >
             <div id="distance-feedback" class="text-xs text-red-500 mt-1 hidden"></div>
           </div>
           <div class="input-group">
-            <span class="input-icon">📐</span>
-            <label for="angle" class="sr-only">Angle</label>
+            <span class="input-icon"><svg class="lucide" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 20v-8"/><path d="M12 4v4"/><circle cx="12" cy="12" r="10"/></svg></span>
+            <label for="angle" class="form-label">Angle (°)</label>
             <input type="number" name="angle" id="angle" min="0" max="90" step="0.01" required
-              placeholder="Angle (e.g., 45°)"
-              class="pl-8 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-2 px-4 text-gray-700 dark:text-gray-200 w-full focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 dark:focus:ring-yellow-900 outline-none transition"
+              placeholder="Angle"
+              class="input-modern w-full"
               value="{{ request.form.angle or '' }}"
               aria-describedby="angle-feedback"
             >
@@ -184,7 +294,7 @@
     <!-- Sticky Predict/Reset Buttons -->
     <div class="sticky-bottom flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
       <button id="predict-btn" type="submit" form="prediction-form"
-        class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg px-10 py-3 rounded-xl shadow-lg transition flex items-center justify-center gap-2 focus:outline-none focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900"
+        class="btn-flat btn-gradient w-full sm:w-auto"
         aria-label="Predict"
       >
         <span id="predict-btn-text">Predict</span>
@@ -194,14 +304,14 @@
         </svg>
       </button>
       <button type="button" id="reset-btn"
-        class="w-full sm:w-auto bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-semibold px-10 py-3 rounded-xl shadow transition"
+        class="btn-flat btn-neutral w-full sm:w-auto"
         aria-label="Reset"
       >Reset</button>
     </div>
     <!-- Output and Save Button -->
     {% if prediction is not none %}
       <div class="mt-10 flex justify-center fade-in">
-        <div class="p-8 rounded-2xl bg-gradient-to-br from-green-100 via-green-50 to-blue-100 dark:from-green-900 dark:to-blue-900 border-2 border-green-300 dark:border-green-700 shadow-xl text-center max-w-lg w-full">
+        <div class="p-8 rounded-2xl glass-card dark:glass-card border-2 border-green-300 dark:border-green-700 shadow-xl text-center max-w-lg w-full">
           <div class="text-lg font-semibold text-green-800 dark:text-green-200 mb-2">Predicted Path Loss</div>
           <div class="text-5xl font-extrabold text-green-700 dark:text-green-100 mb-4 animate-pulse">{{ '%.2f'|format(prediction) }} dB</div>
           <div class="text-sm text-gray-500 dark:text-gray-300">Signal quality: <span class="font-bold">{% if prediction < 80 %}Excellent{% elif prediction < 110 %}Good{% else %}Poor{% endif %}</span></div>
@@ -217,11 +327,11 @@
         <form method="POST" action="{{ url_for('save_prediction') }}">
           <div class="mb-4">
             <label for="building_name" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Building Name</label>
-            <input type="text" name="building_name" id="building_name" required class="rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-2 px-4 text-gray-700 dark:text-gray-200 w-full" placeholder="e.g., Telcotec HQ">
+            <input type="text" name="building_name" id="building_name" required class="rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-2 px-4 text-gray-700 dark:text-gray-200 w-full" placeholder="Building name">
           </div>
           <div class="mb-6">
             <label for="building_address" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Building Address</label>
-            <input type="text" name="building_address" id="building_address" required class="rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-2 px-4 text-gray-700 dark:text-gray-200 w-full" placeholder="e.g., 123 Main Street, Tunis">
+            <input type="text" name="building_address" id="building_address" required class="rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-2 px-4 text-gray-700 dark:text-gray-200 w-full" placeholder="Building address">
           </div>
           <div class="flex justify-end gap-2">
             <button type="button" id="close-save-modal" class="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition">Cancel</button>
@@ -230,7 +340,10 @@
         </form>
       </div>
     </div>
-
+  </div>
+</div>
+<!-- Lucide icons CDN -->
+<script src="https://unpkg.com/lucide@latest"></script>
 <script>
   // Real-time validation
   function validateInput(id, min, max) {
