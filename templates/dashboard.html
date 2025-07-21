@@ -2,7 +2,7 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="flex flex-col gap-8 max-w-7xl mx-auto ">
+<div class="flex flex-col gap-8 max-w-7xl mx-auto">
   <!-- Data Summary Cards -->
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
     <div class="flex items-center gap-4 bg-white rounded-2xl shadow-md p-5">
@@ -28,7 +28,7 @@
     </div>
     <div class="flex flex-col justify-center bg-white rounded-2xl shadow-md p-5">
       <div class="flex items-center gap-2 mb-1">
-        <span class="material-icons text-emerald-500 text-3xl">signal_cellular_alt</span>
+        
         <span class="text-sm text-gray-500">Good Signal %</span>
       </div>
       {% set good = predictions|selectattr('path_loss', 'lt', 70)|list|length %}
@@ -67,77 +67,83 @@
   </div>
 
   <!-- Data Table Card -->
-  <div class="bg-white rounded-2xl shadow-md p-6">
+  <div class="bg-white rounded-2xl shadow-lg p-6">
     <div class="w-full overflow-x-auto">
-      <table class="w-full divide-y divide-gray-200 dark:divide-gray-800">
-        <thead class="bg-gray-100 dark:bg-gray-800">
-          <tr>
-            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Building Name</th>
-            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">x</th>
-            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">y</th>
-            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">z</th>
-            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">x0</th>
-            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">y0</th>
-            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">z0</th>
-            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Obstacles</th>
-            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Clutter Height</th>
-            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Distance</th>
-            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Angle</th>
-            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Path Loss (dB)</th>
-            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Signal Quality</th>
-            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">RSSI (dBm)</th>
-            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+      <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-800 text-xs md:text-sm">
+        <thead>
+          <tr class="bg-gray-50 dark:bg-gray-800">
+            <th class="px-3 py-3 text-left font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider">Building</th>
+            <th class="px-2 py-3 text-center font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider">x</th>
+            <th class="px-2 py-3 text-center font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider">y</th>
+            <th class="px-2 py-3 text-center font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider">z</th>
+            <th class="px-2 py-3 text-center font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider">x₀</th>
+            <th class="px-2 py-3 text-center font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider">y₀</th>
+            <th class="px-2 py-3 text-center font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider">z₀</th>
+            <th class="px-2 py-3 text-center font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider">Obst.</th>
+            <th class="px-2 py-3 text-center font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider">Clutter</th>
+            <th class="px-2 py-3 text-center font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider">Dist.</th>
+            <th class="px-2 py-3 text-center font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider">Angle</th>
+            <th class="px-2 py-3 text-center font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider">Path Loss<br>(dB)</th>
+            <th class="px-2 py-3 text-center font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider">Signal Quality</th>
+            <th class="px-2 py-3 text-center font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider">RSSI<br>(dBm)</th>
+            <th class="px-2 py-3 text-center font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
-        <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
+        <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800">
           {% for p in predictions %}
-          <tr class="even:bg-gray-50 odd:bg-white hover:bg-blue-50 transition">
-            <td class="px-2 py-2 text-xs">{{ p['building_name'] }}</td>
-            <td class="px-2 py-2">{{ p['x'] }}</td>
-            <td class="px-2 py-2">{{ p['y'] }}</td>
-            <td class="px-2 py-2">{{ p['z'] }}</td>
-            <td class="px-2 py-2">{{ p['x0'] }}</td>
-            <td class="px-2 py-2">{{ p['y0'] }}</td>
-            <td class="px-2 py-2">{{ p['z0'] }}</td>
-            <td class="px-2 py-2">{{ p['obstacles'] }}</td>
-            <td class="px-2 py-2">{{ p['clutter_height'] }}</td>
-            <td class="px-2 py-2">{{ p['distance'] }}</td>
-            <td class="px-2 py-2">{{ p['angle'] }}</td>
-            <td class="px-2 py-2 font-bold">{{ '%.2f'|format(p['path_loss']) }}</td>
+          <tr class="hover:bg-blue-50 dark:hover:bg-blue-900 transition">
+            <td class="px-3 py-2 font-medium text-gray-800 dark:text-gray-100 whitespace-nowrap">{{ p['building_name'] }}</td>
+            <td class="px-2 py-2 text-center">{{ p['x'] }}</td>
+            <td class="px-2 py-2 text-center">{{ p['y'] }}</td>
+            <td class="px-2 py-2 text-center">{{ p['z'] }}</td>
+            <td class="px-2 py-2 text-center">{{ p['x0'] }}</td>
+            <td class="px-2 py-2 text-center">{{ p['y0'] }}</td>
+            <td class="px-2 py-2 text-center">{{ p['z0'] }}</td>
+            <td class="px-2 py-2 text-center">{{ p['obstacles'] }}</td>
+            <td class="px-2 py-2 text-center">{{ p['clutter_height'] }}</td>
+            <td class="px-2 py-2 text-center">{{ p['distance'] }}</td>
+            <td class="px-2 py-2 text-center">{{ p['angle'] }}</td>
+            <td class="px-2 py-2 text-center font-bold text-blue-700 dark:text-blue-300">{{ '%.2f'|format(p['path_loss']) }}</td>
+
             <!-- Signal Quality -->
-            <td class="px-2 py-2 align-middle text-center">
-              {% if p['path_loss'] < 60 %}
-                <span class="inline-flex items-center justify-center rounded-full bg-green-100 text-green-700 text-[10px] font-semibold px-1 py-0 whitespace-nowrap" style="min-width:24px; max-width:48px; height:1.2em;">
-                  <span class="material-icons text-green-500 text-xs mr-0.5" style="font-size:0.95em;">signal_cellular_4_bar</span>
+            <td class="px-2 py-2 text-center align-middle">
+              {% set path_loss = p['path_loss'] | float %}
+              {% if path_loss < 60 %}
+                <span class="inline-flex items-center justify-center rounded-full bg-green-100 text-green-700 text-[15px] font-semibold px-1 py-0 whitespace-nowrap" style="min-width:24px; max-width:48px; height:1.2em;">
+                 
                   Excellent
                 </span>
-              {% elif p['path_loss'] < 80 %}
-                <span class="inline-flex items-center justify-center rounded-full bg-lime-100 text-lime-800 text-[10px] font-semibold px-1 py-0 whitespace-nowrap" style="min-width:20px; max-width:40px; height:1.2em;">
-                  <span class="material-icons text-lime-600 text-xs mr-0.5" style="font-size:0.95em;">signal_cellular_3_bar</span>
+              {% elif path_loss < 80 %}
+                <span class="inline-flex items-center justify-center rounded-full bg-lime-100 text-lime-800 text-[15px] font-semibold px-1 py-0 whitespace-nowrap" style="min-width:20px; max-width:40px; height:1.2em;">
+                 
                   Good
                 </span>
-              {% elif p['path_loss'] < 100 %}
-                <span class="inline-flex items-center justify-center rounded-full bg-yellow-100 text-yellow-800 text-[10px] font-semibold px-1 py-0 whitespace-nowrap" style="min-width:28px; max-width:48px; height:1.2em;">
-                  <span class="material-icons text-yellow-600 text-xs mr-0.5" style="font-size:0.95em;">signal_cellular_2_bar</span>
+              {% elif path_loss < 100 %}
+                <span class="inline-flex items-center justify-center rounded-full bg-yellow-100 text-yellow-800 text-[15px] font-semibold px-1 py-0 whitespace-nowrap" style="min-width:28px; max-width:48px; height:1.2em;">
+                 
                   Fair
                 </span>
               {% else %}
-                <span class="inline-flex items-center justify-center rounded-full bg-red-100 text-red-700 text-[10px] font-semibold px-1 py-0 whitespace-nowrap" style="min-width:16px; max-width:32px; height:1.2em;">
-                  <span class="material-icons text-red-500 text-xs mr-0.5" style="font-size:0.95em;">signal_cellular_0_bar</span>
+                <span class="inline-flex items-center justify-center rounded-full bg-red-100 text-red-700 text-[15px] font-semibold px-1 py-0 whitespace-nowrap" style="min-width:16px; max-width:32px; height:1.2em;">
+                  
                   Poor
                 </span>
               {% endif %}
             </td>
+
             <!-- RSSI -->
-            <td class="px-2 py-2 font-bold">{{ '%.2f'|format(-p['path_loss']) }}</td>
+            <td class="px-2 py-2 text-center font-bold text-gray-700 dark:text-gray-200">
+              {{ '%.2f'|format(-p['path_loss']) }}
+            </td>
+
             <!-- Actions -->
-            <td class="px-2 py-2">
-              <div class="flex gap-2">
-                <a href="{{ url_for('view_prediction', id=p['id']) }}" class="p-1 rounded hover:bg-blue-100" title="View">
+            <td class="px-2 py-2 text-center">
+              <div class="flex justify-center gap-2">
+                <a href="{{ url_for('view_prediction', id=p['id']) }}" class="p-1 rounded hover:bg-blue-100 dark:hover:bg-blue-900" title="View">
                   <span class="material-icons text-blue-500">visibility</span>
                 </a>
                 <form method="post" action="{{ url_for('delete_prediction', id=p['id']) }}" style="display:inline;" onsubmit="return confirm('Delete this prediction?');">
-                  <button type="submit" class="p-1 rounded hover:bg-red-100" title="Delete">
+                  <button type="submit" class="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900" title="Delete">
                     <span class="material-icons text-red-500">delete</span>
                   </button>
                 </form>
@@ -152,22 +158,23 @@
         </tbody>
       </table>
     </div>
+
     <!-- Pagination Controls -->
     {% if total_pages > 1 %}
     {% macro pagination_url(page_num) -%}
       {{ url_for('dashboard') }}?{% for k, v in request.args.items() if k not in ['page', 'per_page'] and v %}{{k}}={{v|urlencode}}&{% endfor %}page={{page_num}}&per_page={{per_page}}
     {%- endmacro %}
     <div class="flex justify-center items-center mt-6 gap-2">
-      <a href="{{ pagination_url(page-1) }}" class="px-3 py-1 rounded border text-gray-600 hover:bg-gray-100 {% if page == 1 %}pointer-events-none opacity-50{% endif %}" {% if page == 1 %}tabindex="-1" aria-disabled="true"{% endif %}>
+      <a href="{{ pagination_url(page-1) }}" class="px-3 py-1 rounded border text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 {% if page == 1 %}pointer-events-none opacity-50{% endif %}" {% if page == 1 %}tabindex="-1" aria-disabled="true"{% endif %}>
         Prev
       </a>
       {% for p in range(1, total_pages+1) %}
         <a href="{{ pagination_url(p) }}"
-           class="px-3 py-1 rounded border {% if p == page %}bg-blue-600 text-white{% else %}text-gray-600 hover:bg-gray-100{% endif %}">
+           class="px-3 py-1 rounded border {% if p == page %}bg-blue-600 text-white{% else %}text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800{% endif %}">
           {{ p }}
         </a>
       {% endfor %}
-      <a href="{{ pagination_url(page+1) }}" class="px-3 py-1 rounded border text-gray-600 hover:bg-gray-100 {% if page == total_pages %}pointer-events-none opacity-50{% endif %}" {% if page == total_pages %}tabindex="-1" aria-disabled="true"{% endif %}>
+      <a href="{{ pagination_url(page+1) }}" class="px-3 py-1 rounded border text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 {% if page == total_pages %}pointer-events-none opacity-50{% endif %}" {% if page == total_pages %}tabindex="-1" aria-disabled="true"{% endif %}>
         Next
       </a>
     </div>
