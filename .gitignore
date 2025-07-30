@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.env
+*.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+*.sqlite3
+*.db
+
+# Jupyter
+.ipynb_checkpoints
+
+# VSCode
+.vscode/
+
+# PyCharm
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.*
+
+# Data
+*.csv
+*.h5
+*.hdf5
+
+# Static generated
+/static/signal_heatmap.png
+/static/floorplans/*.png
+
+# Model files
+*.keras
+*.h5
+*.pkl
+*.joblib
+
+# STL and mesh
+/static/floorplans/*.stl
+
+# Misc
+*.bak
+*.swp
+*.tmp

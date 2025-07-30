@@ -1,0 +1,358 @@
+{% extends "base.html" %}
+
+{% block title %}3D Signal Heatmap - Telcotec{% endblock %}
+
+{% block content %}
+<!-- --------- Styles --------- -->
+<style>
+    body { overflow: hidden; }
+
+    #legend {
+        position: absolute; right: 30px; top: 30px; width: 35px; height: 250px;
+        background: linear-gradient(to top, #ff4444 0%, #ffaa00 25%, #ffff44 50%, #88ff44 75%, #44ff44 100%);
+        border-radius: 10px; border: 2px solid rgba(255,255,255,0.8);
+        box-shadow: 0 6px 25px rgba(0,0,0,0.4); z-index: 10;
+    }
+
+    #legend-labels {
+        position: absolute; right: 85px; top: 30px; height: 250px;
+        display: flex; flex-direction: column; justify-content: space-between;
+        font-size: 13px; color: white; z-index: 11;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.8); font-weight: 600;
+    }
+
+    #info-panel {
+        position: absolute; left: 30px; top: 30px; background: rgba(255,255,255,0.12);
+        backdrop-filter: blur(10px); padding: 20px; border-radius: 15px;
+        border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        z-index: 15; color: white; min-width: 200px;
+    }
+
+    #info-panel h2 { margin: 0 0 15px 0; color: #64b5f6; font-size: 20px; font-weight: 300; }
+    #info-panel p { margin: 8px 0; font-size: 14px; opacity: 0.9; }
+
+    #controls {
+        position: absolute; left: 30px; bottom: 30px; background: rgba(255,255,255,0.12);
+        backdrop-filter: blur(10px); padding: 15px; border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        z-index: 15; color: white;
+    }
+
+    #controls h3 { margin: 0 0 10px 0; color: #64b5f6; font-size: 16px; font-weight: 300; }
+    #controls p { margin: 5px 0; font-size: 12px; opacity: 0.8; }
+
+    #tooltip {
+        position: absolute; background: rgba(0,0,0,0.9); color: white;
+        padding: 10px 15px; border-radius: 8px; font-size: 13px; pointer-events: none;
+        display: none; z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    canvas { display: block; cursor: grab; }
+    canvas:active { cursor: grabbing; }
+</style>
+
+<!-- --------- Info Panel --------- -->
+<div id="info-panel">
+    <h2>3D Signal Heatmap</h2>
+    <p><strong>Building:</strong> Test Building</p>
+    <p><strong>Grid Size:</strong> 20x20</p>
+    <p><strong>AP Position:</strong> (5, 5, 2)</p>
+</div>
+
+<div class="relative w-full h-[80vh]">
+    <div id="legend"></div>
+    <div id="legend-labels">
+        <div>-30 dB</div>
+        <div>-60 dB</div>
+        <div>-90 dB</div>
+    </div>
+    <div id="threejs-canvas" style="width:100%;height:100%;position:absolute;top:0;left:0;z-index:1;"></div>
+</div>
+
+<div id="controls">
+    <h3>Interactive Controls</h3>
+    <p>🖱️ Drag to rotate</p>
+    <p>🔄 Scroll to zoom</p>
+    <p>👆 Hover for signal</p>
+</div>
+
+<div id="tooltip"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/controls/OrbitControls.js"></script>
+<script>
+    // Apartment walls and rooms (simple box-based layout for demo)
+    function addApartmentRooms(scene) {
+        // Living Room
+        let livingRoom = new THREE.Mesh(
+            new THREE.BoxGeometry(8, 2.5, 8),
+            new THREE.MeshPhongMaterial({ color: 0xf5f5dc, opacity: 0.12, transparent: true })
+        );
+        livingRoom.position.set(-2, 1.25, -2);
+        scene.add(livingRoom);
+
+        // Bedroom
+        let bedroom = new THREE.Mesh(
+            new THREE.BoxGeometry(4, 2.5, 4),
+            new THREE.MeshPhongMaterial({ color: 0xb0c4de, opacity: 0.16, transparent: true })
+        );
+        bedroom.position.set(6, 1.25, -6);
+        scene.add(bedroom);
+
+        // Kitchen
+        let kitchen = new THREE.Mesh(
+            new THREE.BoxGeometry(4, 2.5, 4),
+            new THREE.MeshPhongMaterial({ color: 0xffe4b5, opacity: 0.16, transparent: true })
+        );
+        kitchen.position.set(6, 1.25, 6);
+        scene.add(kitchen);
+
+        // Bathroom
+        let bathroom = new THREE.Mesh(
+            new THREE.BoxGeometry(3, 2.5, 3),
+            new THREE.MeshPhongMaterial({ color: 0xe0ffff, opacity: 0.16, transparent: true })
+        );
+        bathroom.position.set(-6, 1.25, 6);
+        scene.add(bathroom);
+
+        // Walls (as thin boxes)
+        let wallMaterial = new THREE.MeshPhongMaterial({ color: 0x888888, opacity: 0.25, transparent: true });
+        // Outer walls
+        let wall1 = new THREE.Mesh(new THREE.BoxGeometry(20, 2.8, 0.2), wallMaterial);
+        wall1.position.set(0, 1.4, -10);
+        scene.add(wall1);
+        let wall2 = wall1.clone(); wall2.position.set(0, 1.4, 10); scene.add(wall2);
+        let wall3 = new THREE.Mesh(new THREE.BoxGeometry(0.2, 2.8, 20), wallMaterial);
+        wall3.position.set(-10, 1.4, 0); scene.add(wall3);
+        let wall4 = wall3.clone(); wall4.position.set(10, 1.4, 0); scene.add(wall4);
+
+        // Internal wall example (between living and bedroom)
+        let wall5 = new THREE.Mesh(new THREE.BoxGeometry(0.2, 2.8, 8), wallMaterial);
+        wall5.position.set(2, 1.4, -6); scene.add(wall5);
+    }
+
+    // Walls and furniture AABBs (from the React example)
+    const wallAABBs = [
+        [[1.02, 0, -10], [1.45, 3, 1.2]],
+        [[-4.6, 0, 0.73], [1.02, 3, 1.2]],
+        [[-9.55, 0, 0.73], [-7.1, 3, 1.2]],
+        [[3.85, 0, -10], [4.25, 3, -4]],
+        [[3.85, 0, -0.6], [4.25, 3, 0.55]],
+        [[4.25, 0, 0.12], [8.34, 3, 0.55]],
+        [[-9.65, 0, 8.2], [-6.8, 3, 8.7]],
+        [[-3.75, 0, 8.2], [2.5, 3, 8.7]],
+        [[5.55, 0, 8.2], [8.34, 3, 8.7]],
+        [[1.02, 3, -10], [-9.65, 0, -9.55]],
+        [[8.34, 3, -10], [4.25, 0, -9.55]],
+        [[-10.0, 3, 8.7], [-9.55, 0, -10]],
+        [[8.34, 0, -10], [8.75, 3, 8.7]],
+    ];
+    const furnitureAABBs = [
+        [[-5.1, 0, 2.2], [-3.1, 0.3, 7.35]],
+        [[-3.1, 0, 2.2], [-2.5, 1.0, 7.35]],
+        [[1.45, 0.8, 2.5], [4, 1.0, 5.2]],
+        [[-2.1, 1.0, -9.55], [-8.4, 0, -3.5]],
+        [[1.02, 1.0, -9.55], [-0.75, 0, -2.9]],
+    ];
+
+    const container = document.getElementById('threejs-canvas');
+    const tooltip = document.getElementById('tooltip');
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color('#1e1e1e');
+
+    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+    camera.position.set(0, 20, 25);
+    camera.lookAt(0, 0, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    container.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+    scene.add(ambientLight);
+
+    // Draw walls as boxes
+    wallAABBs.forEach(aabb => {
+        const [min, max] = aabb;
+        const size = [Math.abs(max[0] - min[0]), Math.abs(max[1] - min[1]), Math.abs(max[2] - min[2])];
+        const center = [
+            (min[0] + max[0]) / 2,
+            (min[1] + max[1]) / 2,
+            (min[2] + max[2]) / 2
+        ];
+        const box = new THREE.Mesh(
+            new THREE.BoxGeometry(size[0], size[1], size[2]),
+            new THREE.MeshPhongMaterial({ color: 0x888888, opacity: 0.7, transparent: true })
+        );
+        box.position.set(center[0], center[1], center[2]);
+        scene.add(box);
+    });
+
+    // Draw furniture as boxes (optional, comment out if not needed)
+    furnitureAABBs.forEach(aabb => {
+        const [min, max] = aabb;
+        const size = [Math.abs(max[0] - min[0]), Math.abs(max[1] - min[1]), Math.abs(max[2] - min[2])];
+        const center = [
+            (min[0] + max[0]) / 2,
+            (min[1] + max[1]) / 2,
+            (min[2] + max[2]) / 2
+        ];
+        const box = new THREE.Mesh(
+            new THREE.BoxGeometry(size[0], size[1], size[2]),
+            new THREE.MeshPhongMaterial({ color: 0xdeb887, opacity: 0.5, transparent: true })
+        );
+        box.position.set(center[0], center[1], center[2]);
+        scene.add(box);
+    });
+
+    // --- Increase grid resolution for higher quality heatmap ---
+    const gridSize = 60;
+    const worldSize = 20; // Matches plane dimensions
+    const apPosition = new THREE.Vector3(0, 2, 0); 
+    // Define room regions (example: Living Room, Bedroom, Kitchen, Bathroom)
+
+    function getRoomName(i, j) {
+  if (i >= 0 && i < 20 && j < 20) return "Living Room";
+  if (i >= 20 && i < 30 && j < 20) return "Bedroom";
+  if (i >= 25 && j >= 20) return "Kitchen";
+  return "Other";
+}
+
+    // Generate signal data and assign to rooms
+    const signalData = [];
+    //   {roomName: [strengths]}
+    const roomMap = signalData.reduce((acc, point) => {
+  if (!acc[point.block]) acc[point.block] = [];
+  acc[point.block].push(point.strength);
+  return acc;
+}, {});
+    let minStrength = Infinity, maxStrength = -Infinity;
+    
+    for (let i = 0; i < gridSize; i++) {
+        for (let j = 0; j < gridSize; j++) {
+            // Convert grid indices to world coordinates
+            const worldX = -worldSize/2 + (i / (gridSize-1)) * worldSize;
+            const worldZ = -worldSize/2 + (j / (gridSize-1)) * worldSize;
+            
+            // Calculate distance from AP
+            const dx = worldX - apPosition.x;
+            const dy = 0.05 - apPosition.y; // Grid height
+            const dz = worldZ - apPosition.z;
+            const distance = Math.sqrt(dx*dx + dy*dy + dz*dz);
+            
+            // Simulate signal attenuation
+            const strength = -30 - distance * 1.5;
+            
+            signalData.push({ 
+                i, j, 
+                worldX, worldZ,
+                strength
+            });
+            
+            // Track min/max for normalization
+            if (strength < minStrength) minStrength = strength;
+            if (strength > maxStrength) maxStrength = strength;
+        }
+    }
+
+    // Compute mean for each room
+    const roomMeans = Object.fromEntries(
+    Object.entries(roomMap).map(([block, values]) => [
+    block,
+    values.reduce((a, b) => a + b, 0) / values.length
+    ])
+);
+    for (const room in roomMap) {
+        const arr = roomMap[room];
+        roomMeans[room] = arr.reduce((a, b) => a + b, 0) / arr.length;
+    }
+
+    // Color mapping: green (good/strong) to red (bad/weak)
+    function getColor(strength) {
+        const t = (strength - minStrength) / (maxStrength - minStrength);
+        const r = 1 - t;  // Strong signal: less red
+        const g = t;       // Strong signal: more green
+        const b = 0;
+        return new THREE.Color(r, g, b);
+    }
+
+    // --- HEATMAP SURFACE: Use a colored plane for the heatmap ---
+    // Assign color per cell (face), using the mean of the room for that cell
+     const geometry = new THREE.PlaneGeometry(worldSize, worldSize, gridSize - 1, gridSize - 1);
+    const colors = [];
+    for (let i = 0; i < gridSize; i++) {
+        for (let j = 0; j < gridSize; j++) {
+            const point = signalData[i * gridSize + j];
+            const color = getColor(point.strength);
+            colors.push(color.r, color.g, color.b);
+        }
+    }
+    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+
+    const material = new THREE.MeshPhongMaterial({
+        vertexColors: true,
+        side: THREE.DoubleSide,
+        opacity: 0.92,
+        transparent: true,
+        shininess: 80,
+        specular: 0x222222
+    });
+    const surface = new THREE.Mesh(geometry, material);
+    surface.rotation.x = -Math.PI / 2;
+    surface.position.y = 0.05;
+    scene.add(surface);
+
+    // --- HOVER LOGIC OVER FLAT SURFACE ---
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    let lastMouseEvent = null;
+
+    container.addEventListener('mousemove', event => {
+        const rect = container.getBoundingClientRect();
+        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = - ((event.clientY - rect.top) / rect.height) * 2 + 1;
+        lastMouseEvent = event;
+    });
+
+function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObject(surface);
+        
+        if (intersects.length > 0 && lastMouseEvent) {
+            const face = intersects[0].face;
+            const idx = face.a;
+            const i = Math.floor(idx / gridSize);
+            const j = idx % gridSize;
+            const point = signalData[i * gridSize + j];
+            
+            tooltip.style.display = 'block';
+            tooltip.style.left = (lastMouseEvent.clientX + 15) + 'px';
+            tooltip.style.top = (lastMouseEvent.clientY + 15) + 'px';
+            tooltip.innerHTML = `
+                <div><strong>Position:</strong> (${point.worldX.toFixed(1)}, ${point.worldZ.toFixed(1)})</div>
+                <div><strong>Signal:</strong> ${point.strength.toFixed(2)} dB</div>
+            `;
+        } else {
+            tooltip.style.display = 'none';
+        }
+
+        renderer.render(scene, camera);
+    }
+
+    animate();
+
+    window.addEventListener('resize', () => {
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+    });
+</script>
+{% endblock %}

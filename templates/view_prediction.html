@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}View Prediction{% endblock %}
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 py-8">
+  <div class="max-w-xl w-full bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 animate-fade-in">
+    <div class="flex items-center gap-3 mb-6">
+      <span class="material-icons text-blue-500 text-3xl">visibility</span>
+      <h2 class="text-2xl font-extrabold text-gray-800 dark:text-gray-100 tracking-tight">Prediction Details</h2>
+    </div>
+    <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+      <li class="py-3 flex items-center gap-2">
+        <span class="material-icons text-blue-400">event</span>
+        <span class="font-semibold text-gray-700 dark:text-gray-200 w-40">Date/Time:</span>
+        <span class="text-gray-800 dark:text-gray-100">{{ prediction.datetime }}</span>
+      </li>
+      <li class="py-3 flex items-center gap-2">
+        <span class="material-icons text-blue-400">location_city</span>
+        <span class="font-semibold text-gray-700 dark:text-gray-200 w-40">Building:</span>
+        <span class="text-gray-800 dark:text-gray-100">{{ prediction.building_name }}</span>
+      </li>
+      <li class="py-3 flex items-center gap-2">
+        <span class="material-icons text-blue-400">place</span>
+        <span class="font-semibold text-gray-700 dark:text-gray-200 w-40">Address:</span>
+        <span class="text-gray-800 dark:text-gray-100">{{ prediction.building_address }}</span>
+      </li>
+      <li class="py-3 flex items-center gap-2">
+        <span class="material-icons text-blue-400">straighten</span>
+        <span class="font-semibold text-gray-700 dark:text-gray-200 w-40">Distance (m):</span>
+        <span class="text-gray-800 dark:text-gray-100">{{ prediction.distance }}</span>
+      </li>
+      <li class="py-3 flex items-center gap-2">
+        <span class="material-icons text-blue-400">layers</span>
+        <span class="font-semibold text-gray-700 dark:text-gray-200 w-40">Obstacles:</span>
+        <span class="text-gray-800 dark:text-gray-100">{{ prediction.obstacles }}</span>
+      </li>
+      <li class="py-3 flex items-center gap-2">
+        <span class="material-icons text-blue-400">height</span>
+        <span class="font-semibold text-gray-700 dark:text-gray-200 w-40">Antenna Height (m):</span>
+        <span class="text-gray-800 dark:text-gray-100">{{ prediction.hauteur }}</span>
+      </li>
+      <li class="py-3 flex items-center gap-2">
+        <span class="material-icons text-blue-400">account_tree</span>
+        <span class="font-semibold text-gray-700 dark:text-gray-200 w-40">Clutter Height (m):</span>
+        <span class="text-gray-800 dark:text-gray-100">{{ prediction.clutter_height }}</span>
+      </li>
+      <li class="py-3 flex items-center gap-2">
+        <span class="material-icons text-blue-400">rotate_right</span>
+        <span class="font-semibold text-gray-700 dark:text-gray-200 w-40">Angle (°):</span>
+        <span class="text-gray-800 dark:text-gray-100">{{ prediction.angle }}</span>
+      </li>
+      <li class="py-3 flex items-center gap-2">
+        <span class="material-icons text-blue-400">bar_chart</span>
+        <span class="font-semibold text-gray-700 dark:text-gray-200 w-40">Path Loss (dB):</span>
+        <span class="text-gray-800 dark:text-gray-100">{{ prediction.path_loss }}</span>
+      </li>
+    </ul>
+    <a href="{{ url_for('dashboard') }}" class="inline-block mt-8 px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold shadow hover:bg-blue-700 transition">Back to Dashboard</a>
+  </div>
+</div>
+<style>
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(32px);}
+  to { opacity: 1; transform: translateY(0);}
+}
+.animate-fade-in { animation: fadeIn 0.7s cubic-bezier(.4,0,.2,1) both; }
+</style>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+{% endblock %}
